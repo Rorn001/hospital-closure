@@ -1,0 +1,662 @@
+\documentclass{beamer}
+\usetheme{Madrid}
+\usepackage{mathtools}%
+\usecolortheme{whale}
+\usepackage{xcolor}
+\definecolor{dark-red}{rgb}{0.6,0,0}
+\usepackage{amsmath}
+\usepackage{subcaption}
+\usepackage{dsfont}
+\usepackage{booktabs}
+
+
+\usepackage{tikz}          % Core TikZ package for drawing
+\usetikzlibrary{arrows}    % For different arrow styles
+\usetikzlibrary{shapes}    % For different node shapes
+\usetikzlibrary{positioning} % For positioning elements easily
+\usetikzlibrary{decorations.pathreplacing} % For braces and other decorations
+\usetikzlibrary{calc}      % For coordinate calculations
+\usetikzlibrary{matrix}  % If you use matrix structures
+\usetikzlibrary{fit}     % For fitting nodes around content
+\usepackage{physics}
+\usepackage{amsmath}
+\usepackage{tikz}
+\usepackage{mathdots}
+\usepackage{yhmath}
+\usepackage{cancel}
+\usepackage{color}
+\usepackage{siunitx}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{amssymb}
+\usepackage{gensymb}
+\usepackage{tabularx}
+\usepackage{extarrows}
+\usepackage{booktabs}
+\usetikzlibrary{fadings}
+\usetikzlibrary{patterns}
+\usetikzlibrary{shadows.blur}
+\usetikzlibrary{shapes}
+
+% remove author from footline
+\setbeamertemplate{footline}
+{%
+  \leavevmode%
+  \hbox{%
+    \begin{beamercolorbox}[wd=.60\paperwidth,ht=2.5ex,dp=1.125ex,center]{title in head/foot}%
+      \usebeamerfont{title in head/foot}\insertshorttitle
+    \end{beamercolorbox}%
+    \begin{beamercolorbox}[wd=.30\paperwidth,ht=2.5ex,dp=1.125ex,center]{date in head/foot}%
+      \usebeamerfont{date in head/foot}\insertshortdate
+    \end{beamercolorbox}%
+    \begin{beamercolorbox}[wd=.10\paperwidth,ht=2.5ex,dp=1.125ex,right]{date in head/foot}%
+      \usebeamerfont{date in head/foot}\insertframenumber{} / \inserttotalframenumber\hspace*{2ex}
+    \end{beamercolorbox}}%
+  \vskip0pt%
+}
+
+\theoremstyle{definition}
+% \newtheorem{definition}{Definition}[section]
+% \newtheorem{theorem}{Theorem}[section]
+% \newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{remark}{Remark}[section]
+\newtheorem{assumption}{Assumption}[section]
+
+\title[Impact Evaluation of Hospital Closure]{Redistribution of Patients, Medical Resource Utilization, and Quality of Care after Hospital Closure}
+\subtitle{A Modern Diff-in-Diff Approach}
+
+\author[J. Huang]{
+    Jingzou Ron Huang\inst{1}
+}
+
+\institute{
+    \inst{1}Senior Undergraduate, Quantitative Sciences and Economics, Emory University
+}
+
+
+
+
+\setbeamercovered{transparent}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{caption}[numbered]
+
+\AtBeginSection[]
+{
+  \begin{frame}
+    \frametitle{Roadmap}
+    \tableofcontents[currentsection]
+  \end{frame}
+}
+
+
+\begin{document}
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+
+
+\begin{frame}{Background and Motivations}
+
+\begin{itemize}
+    \setlength{\itemsep}{18pt} % Adjust spacing
+    \item Increasing number of hospital closures \textcolor{gray}{(Kaufman et al., 2016)}, but lack of prompt government support before and after closures.
+    \begin{itemize}
+        \setlength{\itemsep}{10pt} 
+        \item Debate on whether to bail out closing hospitals
+    \end{itemize}
+    \item Inconsistent evidence on the impact of hospital closure
+    \begin{itemize}
+        \setlength{\itemsep}{10pt}
+        \item Hospital closures as an indication of market selection $\Rightarrow$ increasing social welfare after closures of inefficient hospitals \textcolor{gray}{(Capps et al., 2010; Lindrooth et al., 2003; Song and Saghafian, 2019)}
+        \item No economically significant impact on quality of care and treatment efficiency using mortality and readmission rate   \textcolor{gray}{(Gujral and Basu, 2019; Probst and et al.,1999)}
+        \item Significant evidence on worsened patient accessibility to healthcare and negative economic impacts \textcolor{gray}{(Buchmueller et al., 2006; Hodgson et al., 2015)}
+    \end{itemize}
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Background and Motivations}
+
+\begin{itemize}
+    \setlength{\itemsep}{18pt} % Adjust spacing
+    \item Inconclusive about the whether the cost outweighs the benefits from bailing out a closing hospital 
+
+    \item This is a niche topic in the literature; lack of comprehensive understanding of the impact of hospital closures \textcolor{gray}{(Mills et al., 2024)}
+    
+    \item The variation and the noisy results can be attributed to 3 potential pitfalls:
+    \begin{itemize}
+        \setlength{\itemsep}{6pt}
+        \item Lack of robust causal inference methodology (imbalanced numbers of treated and untreated units $+$ heterogeneous treatment timing) 
+        \item Lack of rigorous treatment assignment (use of hospital service area or distance) % historic patient flow or distance to proxy ex-post preference of patient to identify alternative hospitals (translate identification of treated units into measuring ex-post patient's revealed preference of hospital)
+        \item limited scope in distinguishing heterogeneous treatment (location, type of services, and level of analysis/aggregation of data)
+    \end{itemize}
+\end{itemize}
+
+    
+\end{frame}
+
+
+\begin{frame}{The Focus of This Paper}
+
+\begin{itemize}
+    \setlength{\itemsep}{16pt} % Adjust spacing
+    \item The magnitude, direction, and significance of the effect can vary across those dimensions
+    \begin{itemize}
+        \setlength{\itemsep}{8pt}
+        \item Mixing those heterogeneous effects together can confound the interpretation of the overall effects % statistically under or overestimate
+    \end{itemize}
+    
+    \item Rural-urban difference has been widely studied, but very few have been focused on inpatient-outpatient difference and hospital-regional level difference, and how they may interact with each other
+
+    \item Contribution of this study:
+
+    \begin{itemize}
+        \setlength{\itemsep}{8pt}
+        \item Take all three dimensions of heterogeneity in to consideration 
+        \item Data-driven approach for treatment assignment %based on patient redistribution pattern after hospital closure
+        \item Synthetic Diff-in-Diff $+$ First-stage Ridge Forward Selection algorithm for donor pool selection
+    \end{itemize}
+\end{itemize}
+
+    
+\end{frame}
+
+
+
+
+\begin{frame}{Preview of Main results}
+
+\begin{itemize}
+\setlength{\itemsep}{17pt}
+    \item 8 metrics to evaluate the redistribution of patients, quality of care, and medical resources utilization and cost
+    \item Affected hospitals receive 20-40\% more patients from the affected regions 
+    \item Quality of care overall remains unchanged
+    \begin{itemize}
+    \setlength{\itemsep}{6pt}
+        \item but inpatient department experience worse quality of care than outpatient department 
+    \end{itemize}
+    \item Patients have experienced significant accessibility difficulties
+    \begin{itemize}
+    \setlength{\itemsep}{6pt}
+        \item Revisit/readmission related outcomes reflect more about accessibility issues rather than the quality of care % it is traditionally categorized as a measure of quality of care
+    \end{itemize}
+    \item Increasing medical resources utilization and cost per patient per visit/admission
+
+    
+\end{itemize}
+
+
+\end{frame}
+
+
+\begin{frame}{Preview of Main results}{Heterogeneous Effect}
+
+\begin{itemize}
+\setlength{\itemsep}{17pt}
+    \item Inpatient tends to be less affected by the closure than the outpatient department, except for quality of care
+    \item Effects are larger and more significant at the regional level than at the hospital level
+    \item The more rural the affected hospital and region are, the more the closure exacerbates its impact on all the metrics 
+    \begin{itemize}
+    \setlength{\itemsep}{10pt} % interaction between heterogeneous effects
+        \item The correlation between rural scores and estimates is stronger at the regional level than at the hospital level
+        \item For quality of care, the correlation between rural score and estimate is stronger for inpatient than outpatient
+    \end{itemize}
+\end{itemize}
+    
+\end{frame}
+
+
+%---------------------------------------------------------
+
+
+\section{Data and Methodology}
+
+\subsection{Data Source, Closure Identification, and Treatment assignment}
+
+%---------------------------------------------------------
+
+\begin{frame}{Data and Methodology}{Data Source and Closure Identification}
+
+\begin{itemize}
+\setlength{\itemsep}{12pt}
+\item 3 main data sources
+    \begin{itemize}
+    \setlength{\itemsep}{7pt}
+        \item Healthcare Cost and Utilization Project (HCUP) inpatient (SID) and outpatient (SEDD) datasets of Georgia state in the United States from 2010 to 2020
+        \item USDA's Rural-Urban Continuum Codes for rural scores of patients and hospitals
+        \item AHA Annual Survey for hospital-level information
+    \end{itemize}
+    \item Closure identification: testing if a certain hospital ID has no data after a certain month
+    \begin{itemize}
+    \setlength{\itemsep}{7pt}
+        \item confirm a closure if the corresponding hospital closure announcement could be found
+    \end{itemize}
+\end{itemize}
+
+\end{frame}
+
+
+
+
+\begin{frame}{Data and Methodology}{Hospital Characteristics}
+\begin{itemize}
+\setlength{\itemsep}{18pt}
+    \item 8 hospital closures in Georgia from 2010-2020
+    \begin{itemize}
+    \setlength{\itemsep}{7pt}
+    \setlength{\itemsep}{7pt}
+        \item All matched with official closure announcement
+        \item 5 of which matched with UNC's national-wide report of hospital closure
+    \end{itemize}
+    \item Based on the USDA urban-rural continuum, none of the closed hospitals in our sample is located in metropolitan areas
+    \begin{itemize}
+    \setlength{\itemsep}{7pt}
+        \item Rural score ranges from 4 to 7
+        \item Sufficient rural variation (population 20000 or more adjacent to metro areas versus population 5000 or more not adjacent to any metro areas)
+    \end{itemize}
+    \item 4 hospitals are significantly larger than the other 4 hospitals (in terms of number of employees and yearly visits/admissions)
+    \begin{itemize}
+    \setlength{\itemsep}{7pt}
+        \item But the scale of hospitals is not strongly correlated with rural scores %evenly distributed among different locations, so scale of hospitals is not likely to be a confounding factor when comparing rural and urban hospital; obviously smaller hospital -> less significant impact
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}{Data and Methodology}{Treated Units Identification}
+\begin{itemize}
+\setlength{\itemsep}{18pt}
+    \item To identify affected hospital $\Rightarrow$ To identify alternative hospital based on patient's preference conditional on closure
+    \item HSA and HRR: historic patient flow, revealing pre-closure preference, not post-closure preference
+    \begin{itemize}
+        \item Rough demarcations approximating patient flow pattern
+    \end{itemize}
+    \item Treatment assignment by distance from the closed hospital is usually subjective and arbitrary
+    \begin{itemize}
+    \setlength{\itemsep}{6pt}
+        \item The standard can be hard to adjusted when we consider rural-urban comparison; ground-truth treated units could be within 20 miles for more urban closed hospital but no treated unit until 50 miles away from the more rural closed hospital
+        \item Only one of many factors that contribute to patients' post-closure preference
+    \end{itemize}
+\end{itemize}
+    
+\end{frame}
+
+
+\begin{frame}{Data and Methodology}{Treated Units Identification}
+
+\input{temp}
+
+\vspace{-0.55cm}
+
+\begin{itemize}
+    \item An data-driven solution: empirically test which hospitals have encountered significant influx from the affected regions % as a proxy of post-closure preference
+    \item Treated if significant influx from $z^t_i$ (regions where closed hospital is the $t$th hospital) to $h^{z^t_i}_j$ ($j$th alternative hospital for $z^t_i$)
+    \begin{itemize}
+        \item a more granular analysis of whether patients from the ``affected regions" redistribute to ``potential alternative" hospitals % instead of treating the entire affected region as one area, by defining affected regions and potential alternative more specifically and at its most granularity; add subscript and superscript for ranking of alternative for the sake of defining the control groups: by change the closed hospital to any other hospital
+    \end{itemize}
+\end{itemize}
+% affected patients are those who are forced to change their preference after closure, basically those who have the closed hospital as their major hospital, which can be determined simply by historic patient flow pattern
+\end{frame}
+
+
+%---------------------------------------------------------
+
+
+\subsection{Econometric Model}
+
+%---------------------------------------------------------
+
+
+
+\begin{frame}{Econometric Model}{Synthetic Diff-in-Diff}
+    
+
+$$
+\begin{gathered}
+    \hat{\lambda}^{\text {sdid }}=\underset{\lambda}{\operatorname{argmin}}\left\|\overline{\boldsymbol{y}}_{p o s t, c o}-\left(\boldsymbol{\lambda}_{\text {pre }} \boldsymbol{Y}_{\text {pre,co }}+\lambda_0\right)\right\|_2^2 \\
+\text { s.t } \sum \lambda_t=1 \text { and } \lambda_t>0 \forall  t \\
+\end{gathered}
+$$
+
+$$
+\begin{gathered}
+\hat{w}^{\text {sdid }}=\underset{w}{\operatorname{argmin}}\left\|\overline{\boldsymbol{y}}_{\text {pre,tr }}-\left(\boldsymbol{Y}_{\text {pre,co }} \boldsymbol{w}_{\text {co }}+w_0\right)\right\|_2^2+\zeta^2 T_{\text {pre }}\left\|\boldsymbol{w}_{c o}\right\|_2^2 
+\\
+\text { s.t } \sum w_i=1 \text { and } w_i>0 \forall i
+\end{gathered}
+$$
+
+$$
+\begin{gathered}
+\hat{\tau}^{\text {sdid }}=\underset{\mu, \alpha, \beta, \tau}{\operatorname{argmin}}\left\{\sum_{i=1}^N \sum_{t=1}^T\left(Y_{i t}-\left(\mu+\alpha_i+\beta_t+\tau D_{i t}\right)^2 \hat{w}_i^{\text {sdid }} \hat{\lambda}_t^{\text {sdid }}\right\}\right. \\
+\end{gathered}
+$$
+
+\end{frame}
+
+
+\begin{frame}{Econometric Model}{Placebo Variation Estimation and Stacked Estimates}
+
+\begin{itemize}
+    \item Placebo variance estimation: resample $\mathcal{N}_{treated}$ out of $\mathcal{N}_{donor}$ without replacement within the maximum iterations $B$ and estimate $\hat{\tau}^{(b)}$
+\end{itemize}
+    $$\hat{V}^{\text{placebo}}_{\tau} = \frac{1}{B} \sum_{b=1}^{B} \left( \hat{\tau}^{(b)} - \frac{1}{B} \sum_{b=1}^{B} \hat{\tau}^{(b)} \right)^2$$
+    $$\tau \in \hat{\tau}^{sdid} \pm z_{\alpha/2} \sqrt{\hat{V}^{placebo}_{\tau}}$$
+
+\begin{itemize}
+    \item Stacked Estimates \textcolor{gray}{(Porreca, 2022)}: 
+\end{itemize}
+
+$$\hat{\tau} = \sum^L_l (\mu_l \cdot \hat{\tau}_l)$$  $$\mu_l = \frac{N_l}{\sum^L_l N_l}$$
+    
+\end{frame}
+
+
+%---------------------------------------------------------
+
+
+\subsection{Donor Pool Selection}
+
+%---------------------------------------------------------
+
+
+
+\begin{frame}{Donor Pool Selection}{Forward Stepwise Selection Algorithm}
+
+\begin{itemize}
+\setlength{\itemsep}{18pt}
+    \item $T \ll N_{donor} \Rightarrow$ Overfitting the pre-treatment trend % N_{donor} parameters to be determined (need at least N_{donor} data points); T<<N results in nonunique solution where the hyperplane is more likely to interpolate most of data points; too local and sensitive to local noises
+    \item Problem: Less predictive power of the counterfactual trend $\Rightarrow$ less credible parallel trend
+    \item Solution: trim donor pool by forward selection \textcolor{gray}{(Greathouse et al., 2023; Cerulli, 2024; Shi and Huang, 2023)}
+    \begin{itemize}
+    \setlength{\itemsep}{8pt}
+        \item Start with 0 donors, add one donor that brings the best fit at each step, and select the optimal number of donors that minimize the test errors. 
+    \end{itemize}
+    \item Downsides of the forward selection algorithm
+    \begin{itemize}
+    \setlength{\itemsep}{8pt}
+        \item Computationally burdensome %600-700 zipcodes
+        \item Parsimonious algorithm
+        \item Contingent on previous selection at each step % possible that a donor may be important in predicting the trend but may not bring the best fit conditional on previously selected donors
+    \end{itemize}
+\end{itemize}
+    
+\end{frame}
+
+
+
+\begin{frame}{Donor Pool Selection}{First-stage Ridge Forward selection}
+
+\begin{itemize}
+\setlength{\itemsep}{18pt}
+    \item First-stage Ridge Froward Selection:
+    \begin{itemize}
+    \setlength{\itemsep}{8pt}
+        \item Ranks the relative importance of donors based on L2 regularized coefficients, start from 0 donors, add one donor sequentially from the most important to the least important donor, and choose the optimal donor
+    \end{itemize}
+    \item Less computationally burdensome (compute $N_{donor}$ versus $\frac{(N+1)N}{2}$ times of $\hat{\tau}$) without loss of predictive power
+    \item Similar strategy: First-stage LASSO and random forest % lasso is feature selection and ridge/random forest are feature importance; lasso can drop too many donors when they are colinear, which is likely in trend prediction
+
+\end{itemize}
+    
+\end{frame}
+
+
+\begin{frame}{Donor Pool Selection}{Placebo Experiments}
+% pre-treatment test RMSE
+\begin{figure}[t]
+    \caption{Optimal Number of Donor Units}
+    \centering
+    \subfloat[Foward Selection]{%
+    \includegraphics[width=0.65\linewidth]{plots/optimal_unit_fs.png}
+    \label{fig:out-revisit-rate}
+    }
+    \hspace{1cm}
+    % Adjust horizontal spacing
+    \subfloat[First-stage Ridge]{%
+        \includegraphics[width=0.65\linewidth]{plots/optimal_unit_2.png}
+    \label{fig:in-influx}
+    }
+    \label{fig:optimal-donor}
+\end{figure}
+
+    
+\end{frame}
+
+
+\begin{frame}{Donor Pool Selection}{Placebo Experiments}
+% post-treatment RMSE
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.7\linewidth]{plots/test_rmse_fs.png}
+    \caption{Avg. Post-treatment RMSE}
+    \label{fig:rmse}
+\end{figure}
+\end{frame}
+
+
+% \begin{frame}{Donor Pool Selection}{Placebo Experiments}
+
+% \begin{figure}[t]
+%     \centering
+%     \includegraphics[width=\linewidth]{plots/event_placebo_1.png}
+%     \caption{Event Studies for Placebo Experiments}
+%     \label{fig:fs-event}
+% \end{figure}
+
+    
+% \end{frame}
+
+
+
+\begin{frame}{Data and Methodology}{Variable Definition}
+
+\begin{itemize}
+\setlength{\itemsep}{15pt}
+    \item Redistribution: monthly proportion of patients from the affected regions in the treated hospital
+    \item Quality of care: 
+    \begin{itemize}
+    \setlength{\itemsep}{4pt}
+        \item Mortality rate
+        \item Length of stay: proportion of overnight stay (LOS$>$0) for outpatient, length of stay for inpatient
+        \item \textit{30-day Revisit/readmission rate} \item \textit{Number of 30-day revisit/readmission}
+        \item \textit{Days between revisit/readmission within 30 days}
+    \end{itemize}
+    \item Medical resource utilization and cost: 
+    \begin{itemize}
+    \setlength{\itemsep}{4pt}
+        \item total medical procedures and diagnostic services per patient per visit/admission
+        \item total charges per patient per visit/admission
+    \end{itemize}
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}{Data and Methodology}{Decomposition of Effect on Revisit/Readmission}
+
+\begin{itemize}
+\setlength{\itemsep}{15pt}
+    \item Revisit/readmission-related outcomes were conventionally seen as a measure of the quality of care \textcolor{gray}{(Song and Saghafian, 2019; Mills et al., 2024)}
+    \item Decomposing the effect of hospital closure on Revisit/readmission-related outcomes
+    \item \( P(R) \) probability of revisit/readmission, $P(R) = f(E, A)$
+    \begin{itemize}
+        \item \( E \) quality and efficiency of treatment, $\frac{\partial P(R)}{\partial E} < 0$ %probability decrease with the quality of care
+        \item \( A \) represents the accessibility of healthcare, $\frac{\partial P(R)}{\partial A} > 0$ %probabilty increases with accessibility
+        \item Post closure $\Rightarrow$ $\frac{dE}{dC}<0$ and $\frac{dA}{dC}<0$
+    \end{itemize}
+\end{itemize}
+\begin{align*}
+\frac{dP(R)}{dC} = \frac{\partial P(R)}{\partial E} \frac{dE}{dC} + \frac{\partial P(R)}{\partial A} \frac{dA}{dC}
+\end{align*}
+% theoretically we do not know which effect dominate, but if total effect is positive likely that efficiency effect dominates and vice versa. 
+\end{frame}
+
+
+
+\begin{frame}{Data and Methodology}{Hypothesis and Heterogeneous Effects}
+
+\begin{itemize}
+\setlength{\itemsep}{15pt}
+    \item Patient will distribute to their alternative hospitals
+    \item Quality and efficiency of care will reduce (especially for inpatient care)
+    \item More consumption of healthcare resources per patient per visit
+    \item Heterogeneous impact
+    \begin{itemize}
+    \setlength{\itemsep}{4pt}
+        \item The magnitude of the effect will be larger for more rural areas %poorer accessibility to healthcare and transportation cost (monetary and time)
+        \item Smaller impact on inpatients than outpatient care due to different capacity of the facility %limited number of beds
+        \item Smaller impact at the hospital level than at the regional level due to the different subjects of analysis % though hospital-level analysis provides useful managerial insights, it is not conclusive about the overall impact on the affected patients
+    \end{itemize}
+\end{itemize}
+
+\end{frame}
+
+
+%---------------------------------------------------------
+
+
+\section{Main Results}
+
+%---------------------------------------------------------
+
+
+\begin{frame}{Main Results}{Summary Statistics}
+\vspace{-0.7cm}
+\begin{table}[t]
+\label{tab:sum_in}
+\renewcommand{\arraystretch}{0.55} % Adjust row spacing
+\setlength{\tabcolsep}{8pt} % Adjust column spacing
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l@{\hskip 10pt}cc@{\hskip 15pt}c@{\hskip 10pt}cc}
+\toprule
+\toprule
+                                           & \multicolumn{2}{c}{Hospital} & & \multicolumn{2}{c}{Zip-code} \\ \midrule
+\textit{Panel A: Outpatient Data}          & Treated   & Donor    &  & Treated   & Donor    \\ \cline{2-3} \cline{5-6} 
+Count                                      & 8         & 132      &  & 82        & 869      \\
+\textbf{Number of visits}                           & 13,900    & 56,271   &  & 5,363     & 8,169    \\
+Average total charges per visit            & 1,336     & 1,918    &  & 1,938     & 2,269    \\
+Average total medical codes per visit      & 5.11      & 5.03     &  & 5.11      & 5.23     \\
+Average proportion of overnight stay       & 0.089     & 0.139    &  & 0.137     & 0.160    \\
+Average 30-day revisit rate                & 0.202     & 0.197    &  & 0.199     & 0.193    \\
+Average number of 30-day revisits          & 2,915     & 11,065   &  & 1,089     & 1,638    \\
+Average days between visits within 30 days & 11.4      & 11.3     &  & 11.2      & 11.1     \\
+\textbf{Mortality rate (\%)  }                      & 0.209     & 0.182    &  & 0.207     & 0.184    \\
+\textbf{Rural Score}                                & 5.99      & 3.81     &  & 5.61      & 3.34     \\ \midrule
+\textit{Panel B: Inpatient Data}           &           &          &  &          &          \\
+Count                                      & 8         & 156      &  & 82        & 867      \\
+\textbf{Number of visits}                           & 1,437     & 12,810   &  & 1,234     & 2,208    \\
+Average total charges per admission        & 11,013    & 30,160   &  & 26,897    & 30,149   \\
+Average total medical codes per admission  & 5.31      & 14.13    &  & 15.31     & 17.09    \\
+Average length of stay                     & 3.67      & 6.27     &  & 4.51      & 4.75     \\
+Average 30-day revisit rate                & 0.28      & 0.24     &  & 0.25      & 0.23     \\
+Average number of 30-day revisits          & 376       & 2,775    &  & 284       & 492      \\
+Average days between visits within 30 days & 10.26     & 11.43    &  & 10.60     & 10.86    \\
+\textbf{Mortality rate (\%) }                       & 2.35      & 2.66     &  & 2.31      & 1.84     \\
+\textbf{Rural Score }                               & 6.10      & 3.72     &  & 5.60      & 3.35     \\
+\bottomrule
+\bottomrule
+\end{tabular}%
+}
+\parbox{0.97\textwidth}{%
+    \scriptsize 
+    The base year of all summarized outcomes is 2011, which is before any identified closures
+}
+\end{table}
+
+
+
+    
+\end{frame}
+
+
+\begin{frame}{Main Results}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\linewidth]{plots/estim_sum.png}
+    \caption{Stakced and Individual Estimates}
+    \label{fig:estim_sum}
+\end{figure}
+\vspace{-0.5cm}
+\begin{itemize}
+    \item Mostly coincides with our expectations, except for quality of care
+    \item Both numerator and denominator of revisit/readmission rate may decrease % numerator - number of revisit, denominator number of visits
+\end{itemize}
+%quality of care remains unchanged, more medical resources consumption, regional-level effects large, effects on outpatient larger for redistribution
+\end{frame}
+
+
+\begin{frame}{Main Results}{Heterogeneous Effect}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\linewidth]{plots/rural_score_corr.png}
+    \caption{Correlation between Rural score and Estimates}
+    \label{fig:rural_corr}
+\end{figure}
+% impact of rural location is larger for regional-level and hospital-level (medical resources and revisit number); patients from more rural areas redistribute more; scale of the plot
+\end{frame}
+
+
+%---------------------------------------------------------
+
+
+\section{Discussion and Conclusion}
+
+%---------------------------------------------------------
+
+
+\begin{frame}{Discussion and Conclusion}{Policy Implication}
+
+\begin{itemize}
+\setlength{\itemsep}{15pt}
+    \item Consistent with negative impacts of rural hospital closures on healthcare access \textcolor{gray}{(Buchmueller et al., 2006; Hodgson et al., 2015)}
+    \item Improve in operational efficiency of hospital markets \textcolor{gray}{(Capps et al., 2010; Lindrooth et al., 2003; Song and Saghafian, 2019)}, but increasing consumption and cost of medical resources and impaired accessibility to healthcare at the patient level
+    \begin{itemize}
+        \item Hospital efficiency does not capture broader societal cost
+    \end{itemize}
+    \item While bailing out inefficient hospitals may not be the optimal solution, especially at the level of the hospital market, the potential negative consequences of closures on rural communities should not be overlooked
+    \begin{itemize}
+        \item Outreach health services % to bridge the gap between the local community and healthcare services, especially in the rural areas
+    \end{itemize}
+\end{itemize} 
+    
+\end{frame}
+
+
+
+\begin{frame}{Discussion and Conclusion}{Limitations}
+
+\begin{itemize}
+\setlength{\itemsep}{15pt}
+    \item Survival Bias of hospital-based data
+    \begin{itemize}
+    \setlength{\itemsep}{7pt}
+        \item Only captures those who are able to reach the hospital $\Rightarrow$ underestimate the negative effect on quality and efficiency of care
+        \item A major drawback not only in our study but also in the literature on hospital closure
+    \end{itemize}
+    \item Only Georgia data: lack of generalizability 
+    \begin{itemize}
+        \item Future study: expand the scope
+    \end{itemize}
+\end{itemize}
+    
+\end{frame}
+
+
+
+\begin{frame}{Acknowledgment}
+
+I would like to thank Professor David Howard for providing access to HCUP inpatient and outpatient data and Professor Ian McCarthy for providing access to AHA data and all the technical support. I would like to thank Professor Stephen O'Connell for providing great instruction on causal inference. I am grateful for all the comments and feedback from my undergraduate honor thesis committees
+
+\end{frame}
+
+
+
+
+\end{document}
